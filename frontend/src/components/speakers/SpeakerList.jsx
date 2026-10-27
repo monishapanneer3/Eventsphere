@@ -7,9 +7,7 @@ import {
   AppstoreOutlined,
   UnorderedListOutlined,
   MailOutlined,
-  BookOutlined,
-  EyeOutlined,
-  UserOutlined,
+  EyeOutlined
 } from "@ant-design/icons";
 import { fetchSpeakers, deleteSpeaker, setSpeakerPage, clearSpeakerStatus } from "../../store/slices/speakerSlice";
 import SpeakerForm from "./SpeakerForm";
