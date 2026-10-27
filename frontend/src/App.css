@@ -2,8 +2,43 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--cream);
 }
 
 .app-content {
   flex: 1;
+  min-width: 0;
+  margin-left: 240px;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content > * {
+  animation: page-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-shell > footer {
+  margin-left: 240px;
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    margin-left: 0;
+  }
+
+  .app-shell > footer {
+    margin-left: 0;
+  }
 }

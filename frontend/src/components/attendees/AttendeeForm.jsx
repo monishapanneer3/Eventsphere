@@ -5,12 +5,14 @@ import {
   createAttendee,
   updateAttendee,
 } from "../../store/slices/attendeeSlice";
+import sessionService from "../../services/sessionService";
 
 const emptyForm = {
   fullName: "",
   email: "",
   registrationType: "General",
   userName: "",
+  sessionId: null,
 };
 
 const AttendeeForm = ({ open, initialValues, onClose }) => {
@@ -18,8 +20,22 @@ const AttendeeForm = ({ open, initialValues, onClose }) => {
   const isEditMode = Boolean(initialValues && initialValues.id);
 
   const [form, setForm] = useState(emptyForm);
+  const [sessions, setSessions] = useState([]);
   const [statusMsg, setStatusMsg] = useState(null);
   const [nameError, setNameError] = useState(null);
+
+  useEffect(() => {
+    if (open) {
+      sessionService
+        .getAllSessions(0, 100)
+        .then((res) => {
+          setSessions(res.data?.content || []);
+        })
+        .catch((err) => {
+          console.error("Failed to load sessions:", err);
+        });
+    }
+  }, [open]);
 
   useEffect(() => {
     if (initialValues) {
@@ -28,6 +44,7 @@ const AttendeeForm = ({ open, initialValues, onClose }) => {
         email: initialValues.email || "",
         registrationType: initialValues.registrationType || "General",
         userName: initialValues.userName || initialValues.user?.username || "",
+        sessionId: initialValues.sessionId || null,
       });
     } else {
       setForm(emptyForm);
@@ -54,12 +71,13 @@ const AttendeeForm = ({ open, initialValues, onClose }) => {
     }
     setNameError(null);
 
-    // Map flattened user data (userName) onto the backend AttendeeDTO shape.
+    // Map flattened user data (userName) and sessionId onto the backend AttendeeDTO shape.
     const attendeeDto = {
       fullName: form.fullName,
       email: form.email,
       registrationType: form.registrationType,
       userName: form.userName,
+      sessionId: form.sessionId || null,
     };
 
     if (isEditMode) {
@@ -119,6 +137,26 @@ const AttendeeForm = ({ open, initialValues, onClose }) => {
           placeholder="Linked username"
           value={form.userName}
           onChange={handleChange("userName")}
+        />
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <label htmlFor="attendee-session">Session</label>
+        <Select
+          id="attendee-session"
+          style={{ width: "100%" }}
+          placeholder="Select Session"
+          allowClear
+          value={form.sessionId}
+          onChange={(value) =>
+            setForm((prev) => ({ ...prev, sessionId: value || null }))
+          }
+          options={sessions.map((s) => ({
+            value: s.id,
+            label: s.sessionName
+              ? `${s.sessionName}${s.topic ? ` (${s.topic})` : ""}`
+              : `Session #${s.id}`,
+          }))}
         />
       </div>
 

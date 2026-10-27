@@ -35,6 +35,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update user")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updated) {
@@ -44,7 +45,11 @@ public class UserController {
         if (updated.getPassword() != null && !updated.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(updated.getPassword()));
         }
-        if (updated.getRole() != null) user.setRole(updated.getRole());
+        if (updated.getRole() != null) {
+            String requestedRole = updated.getRole().toUpperCase();
+            user.setRole("ADMIN".equals(requestedRole) || "ROLE_ADMIN".equals(requestedRole)
+                ? "ROLE_ADMIN" : "ROLE_USER");
+        }
         return ResponseEntity.ok(userRepository.save(user));
     }
 
@@ -55,11 +60,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRole() == null || user.getRole().isEmpty()) {
-            user.setRole("ROLE_USER");
-        } else if (!user.getRole().startsWith("ROLE_")) {
-            user.setRole("ROLE_" + user.getRole().toUpperCase());
-        }
+        user.setRole("ROLE_USER");
         return ResponseEntity.status(HttpStatus.CREATED).body(userRepository.save(user));
     }
 }

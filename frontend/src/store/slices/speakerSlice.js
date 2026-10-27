@@ -22,7 +22,13 @@ export const fetchSpeakers = createAsyncThunk(
       if (!err.response) {
         return rejectWithValue("Server Unreachable");
       }
-      return rejectWithValue("Failed to GET data");
+      const messages = {
+        401: "Authentication required. Please log in again.",
+        403: "You do not have permission to view speakers.",
+        404: "Speaker endpoint not found.",
+        500: "Speaker service is unavailable. Please try again.",
+      };
+      return rejectWithValue(messages[err.response.status] || "Failed to GET data");
     }
   }
 );

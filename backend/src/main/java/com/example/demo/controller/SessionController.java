@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,11 +20,9 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class SessionController {
 
-    private SessionService sessionService;
+    private final SessionService sessionService;
 
-    public SessionController() {
-    }
-
+    @Autowired
     public SessionController(SessionService sessionService) {
         this.sessionService = sessionService;
     }
@@ -43,12 +42,14 @@ public class SessionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create session")
     public ResponseEntity<SessionDTO> createSession(@RequestBody SessionDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(sessionService.createSession(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update session")
     public ResponseEntity<SessionDTO> update(@PathVariable Long id, @RequestBody SessionDTO dto) {
         return ResponseEntity.ok(sessionService.updateSession(id, dto));

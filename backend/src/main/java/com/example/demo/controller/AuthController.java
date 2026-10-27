@@ -1,4 +1,4 @@
-﻿package com.example.demo.controller;
+package com.example.demo.controller;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
@@ -11,6 +11,7 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -19,15 +20,13 @@ import java.util.Map;
 @Tag(name = "Auth", description = "Authentication endpoints")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
-    private JwtUtil jwtUtil;
-    private UserDetailsService userDetailsService;
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController() {
-    }
-
+    @Autowired
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil,
                           UserDetailsService userDetailsService, UserRepository userRepository,
                           PasswordEncoder passwordEncoder) {
@@ -51,7 +50,10 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(username, password));
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             String token = jwtUtil.generateToken(userDetails);
-            return ResponseEntity.ok(Map.of("token", token));
+                    String role = userRepository.findByUsername(username)
+                        .map(user -> normalizeRole(user.getRole()))
+                        .orElse("ROLE_USER");
+                    return ResponseEntity.ok(Map.of("token", token, "role", role));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
@@ -60,20 +62,27 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
     public ResponseEntity<?> register(@RequestBody User user) {
+        if (user.getUsername() == null || user.getUsername().isBlank()
+                || user.getPassword() == null || user.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body("Username and password are required");
+        }
         if (userRepository != null && Boolean.TRUE.equals(userRepository.existsByUsername(user.getUsername()))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         }
         if (passwordEncoder != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        if (user.getRole() == null || user.getRole().isEmpty()) {
-            user.setRole("ROLE_USER");
-        } else if (!user.getRole().startsWith("ROLE_")) {
-            user.setRole("ROLE_" + user.getRole().toUpperCase());
-        }
+        String requestedRole = user.getRole();
+        user.setRole(normalizeRole(requestedRole));
         if (userRepository != null) {
             userRepository.save(user);
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "User registered successfully", "username", user.getUsername(), "role", user.getRole()));
+    }
+
+    private String normalizeRole(String role) {
+        return "ADMIN".equalsIgnoreCase(role) || "ROLE_ADMIN".equalsIgnoreCase(role)
+                ? "ROLE_ADMIN" : "ROLE_USER";
     }
 }

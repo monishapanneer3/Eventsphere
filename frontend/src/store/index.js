@@ -3,6 +3,7 @@ import authReducer from "./slices/authSlice";
 import sessionReducer from "./slices/sessionSlice";
 import speakerReducer from "./slices/speakerSlice";
 import attendeeReducer from "./slices/attendeeSlice";
+import agendaReducer from "./slices/agendaSlice";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     sessions: sessionReducer,
     speakers: speakerReducer,
     attendees: attendeeReducer,
+    agenda: agendaReducer,
   },
 });
 

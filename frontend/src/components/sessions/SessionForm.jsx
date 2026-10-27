@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Modal, Input, Select, Button, message } from "antd";
+import { Modal, Input, Select, DatePicker, Button, message } from "antd";
+import dayjs from "dayjs";
 import { createSession, updateSession } from "../../store/slices/sessionSlice";
 import { fetchSpeakers } from "../../store/slices/speakerSlice";
 
@@ -158,11 +159,20 @@ const SessionForm = ({ open, initialValues, onClose }) => {
       </div>
 
       <div style={{ marginBottom: 16 }}>
-        <label>Date (YYYY-MM-DD)</label>
-        <Input
-          placeholder="YYYY-MM-DD"
-          value={form.dayOfWeek}
-          onChange={handleChange("dayOfWeek")}
+        <label>Date</label>
+        <DatePicker
+          className="session-date-picker"
+          style={{ width: "100%" }}
+          format="DD/MM/YYYY"
+          placeholder="Select session date"
+          value={form.dayOfWeek && DATE_REGEX.test(form.dayOfWeek) ? dayjs(form.dayOfWeek, "YYYY-MM-DD") : null}
+          onChange={(selectedDate) => {
+            setForm((prev) => ({
+              ...prev,
+              dayOfWeek: selectedDate ? selectedDate.format("YYYY-MM-DD") : "",
+            }));
+            setErrors((prev) => ({ ...prev, dayOfWeek: null }));
+          }}
           onBlur={handleDateBlur}
         />
         {errors.dayOfWeek && (

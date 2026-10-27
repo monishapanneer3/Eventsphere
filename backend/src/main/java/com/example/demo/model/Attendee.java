@@ -22,6 +22,10 @@ public class Attendee {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "session_id")
+    private SessionEntry session;
+
     public Attendee() {}
 
     public Long getId() { return id; }
@@ -34,4 +38,6 @@ public class Attendee {
     public void setRegistrationType(String registrationType) { this.registrationType = registrationType; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public SessionEntry getSession() { return session; }
+    public void setSession(SessionEntry session) { this.session = session; }
 }

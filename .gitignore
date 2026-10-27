@@ -41,3 +41,13 @@ backend/node_modules/
 # Target the specific extension files
 extension.js
 extension.js.map
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Application logs
+*.log
+
+# Nested duplicate project
+/Amypo-Project/

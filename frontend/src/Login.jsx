@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Input, Button, message, Card, Typography } from "antd";
 import { loginUser, clearAuthError } from "./store/slices/authSlice";
+import "./Auth.css";
 
 const { Title } = Typography;
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, loading, error } = useSelector(
     (state) => state.auth
   );
@@ -19,6 +21,13 @@ const Login = () => {
   const usernameInputRef = useRef(null);
 
   // Focus the username field as soon as the login screen mounts.
+  useEffect(() => {
+    if (location.state?.registered) {
+      message.success("Account created. You can now log in.");
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
   useEffect(() => {
     if (usernameInputRef.current) {
       usernameInputRef.current.focus();
@@ -48,21 +57,16 @@ const Login = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "80vh",
-      }}
-    >
-      <Card style={{ width: 380 }}>
-        <Title level={3} style={{ textAlign: "center" }}>
-          EventSphere Login
-        </Title>
+    <div className="auth-page">
+      <Card className="auth-card" bordered={false}>
+        <div className="auth-logo" aria-hidden="true">E</div>
+        <Title level={1}>Welcome back</Title>
+        <p className="auth-intro">Sign in to manage your conference experience.</p>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
+          <div className="auth-field">
+            <label htmlFor="login-username">Username</label>
             <Input
+              id="login-username"
               ref={usernameInputRef}
               placeholder="Username"
               value={username}
@@ -70,8 +74,10 @@ const Login = () => {
               size="large"
             />
           </div>
-          <div style={{ marginBottom: 16 }}>
+          <div className="auth-field">
+            <label htmlFor="login-password">Password</label>
             <Input.Password
+              id="login-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -79,6 +85,7 @@ const Login = () => {
             />
           </div>
           <Button
+            className="auth-primary"
             type="primary"
             htmlType="submit"
             block
@@ -88,7 +95,7 @@ const Login = () => {
             Login
           </Button>
         </form>
-        <p style={{ textAlign: "center", marginTop: 16 }}>
+        <p className="auth-switch">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
       </Card>

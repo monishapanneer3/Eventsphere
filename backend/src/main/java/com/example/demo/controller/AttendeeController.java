@@ -1,4 +1,4 @@
-﻿package com.example.demo.controller;
+package com.example.demo.controller;
 
 import com.example.demo.dto.AttendeeDTO;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,22 +20,22 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class AttendeeController {
 
-    private AttendeeService attendeeService;
+    private final AttendeeService attendeeService;
 
-    public AttendeeController() {
-    }
-
+    @Autowired
     public AttendeeController(AttendeeService attendeeService) {
         this.attendeeService = attendeeService;
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all attendees")
     public ResponseEntity<Page<AttendeeDTO>> getAllAttendees(Pageable pageable) {
         return ResponseEntity.ok(attendeeService.getAllAttendees(pageable));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get attendee by ID")
     public ResponseEntity<AttendeeDTO> getById(@PathVariable Long id) {
         return attendeeService.getAttendeeById(id)
@@ -43,12 +44,14 @@ public class AttendeeController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create attendee")
     public ResponseEntity<AttendeeDTO> createAttendee(@RequestBody AttendeeDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(attendeeService.createAttendee(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update attendee")
     public ResponseEntity<AttendeeDTO> update(@PathVariable Long id, @RequestBody AttendeeDTO dto) {
         return ResponseEntity.ok(attendeeService.updateAttendee(id, dto));

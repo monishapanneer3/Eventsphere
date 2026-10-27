@@ -1,4 +1,4 @@
-﻿package com.example.demo.controller;
+package com.example.demo.controller;
 
 import com.example.demo.dto.SpeakerDTO;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,11 +20,9 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class SpeakerController {
 
-    private SpeakerService speakerService;
+    private final SpeakerService speakerService;
 
-    public SpeakerController() {
-    }
-
+    @Autowired
     public SpeakerController(SpeakerService speakerService) {
         this.speakerService = speakerService;
     }
@@ -43,12 +42,14 @@ public class SpeakerController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create speaker")
     public ResponseEntity<SpeakerDTO> createSpeaker(@RequestBody SpeakerDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(speakerService.createSpeaker(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update speaker")
     public ResponseEntity<SpeakerDTO> update(@PathVariable Long id, @RequestBody SpeakerDTO dto) {
         return ResponseEntity.ok(speakerService.updateSpeaker(id, dto));
